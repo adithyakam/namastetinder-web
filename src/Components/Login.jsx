@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addUser } from "../Redux/userSlice";
+import axiosServer from "../Redux/api";
 
 const Login = () => {
   const [input, setInput] = useState({});
+  const [error, setError] = useState({});
+
   const nav = useNavigate();
   const dispatch = useDispatch();
 
@@ -17,10 +20,23 @@ const Login = () => {
     }));
   };
 
-  const onSubmit = (e) => {
+  const userLogin = async () => {
+    try {
+      const user = await axiosServer.post("/login", input, {
+        withCredentials: true,
+      });
+
+      dispatch(addUser(user));
+      nav("/");
+    } catch (err) {
+      setError(err?.response?.data || "Something went wrong");
+    }
+  };
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    dispatch(addUser(input)); // Assuming input is the action payload
-    nav("/"); // Navigate to the home page after successful dispatch
+
+    userLogin();
   };
 
   return (
@@ -29,11 +45,11 @@ const Login = () => {
         <label className="input input-bordered flex items-center gap-2">
           Email
           <input
-            type="text"
+            type="email"
             className="grow"
             placeholder="daisy@site.com"
             onChange={getInput}
-            name="email"
+            name="emailId"
           />
         </label>
 
